@@ -23,6 +23,7 @@ try:
 except ImportError:
     from io import StringIO
 
+from nfelib.v4_00.consStatServ import TConsStatServ
 
 class Comunicacao(object):
     """
@@ -268,16 +269,25 @@ class ComunicacaoSefaz(Comunicacao):
     def status_servico(self, modelo):
         """
         Verifica status do servidor da receita.
-        :param modelo: modelo é a string com tipo de serviço que deseja consultar, Ex: nfe ou nfce
+        :param modelo: modelo é a string com tipo de serviço que deseja
+            consultar, Ex: nfe ou nfce
         :return:
         """
         url = self._get_url(modelo, 'STATUS')
         # Monta XML do corpo da requisição
-        raiz = etree.Element('consStatServ', versao=VERSAO_PADRAO, xmlns=NAMESPACE_NFE)
-        etree.SubElement(raiz, 'tpAmb').text = str(self._ambiente)
-        etree.SubElement(raiz, 'cUF').text = CODIGOS_ESTADOS[self.uf.upper()]
-        etree.SubElement(raiz, 'xServ').text = 'STATUS'
-        xml = self._construir_xml_soap('NFeStatusServico4', raiz)
+
+        consulta = TConsStatServ(
+            versao=VERSAO_PADRAO,
+            tpAmb=str(self._ambiente),
+            cUF=CODIGOS_ESTADOS[self.uf.upper()],
+            xServ='STATUS'
+        )
+        consulta.original_tagname_ = 'consStatServ'
+
+        xml = self._construir_xml_soap(
+            'NFeStatusServico4',
+            self._construir_etree_ds(consulta)
+        )
         return self._post(url, xml)
 
     def download(self, cnpj, chave):
