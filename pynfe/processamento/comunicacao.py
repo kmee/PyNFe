@@ -23,6 +23,7 @@ try:
 except ImportError:
     from io import StringIO
 
+from nfelib.v4_00.consSitNFe import TConsSitNFe
 from nfelib.v4_00.consStatServ import TConsStatServ
 
 class Comunicacao(object):
@@ -158,14 +159,19 @@ class ComunicacaoSefaz(Comunicacao):
         # url do serviço
         url = self._get_url(modelo=modelo, consulta='CHAVE')
         # Monta XML do corpo da requisição
-        raiz = etree.Element('consSitNFe', versao=VERSAO_PADRAO, xmlns=NAMESPACE_NFE)
-        etree.SubElement(raiz, 'tpAmb').text = str(self._ambiente)
-        etree.SubElement(raiz, 'xServ').text = 'CONSULTAR'
-        etree.SubElement(raiz, 'chNFe').text = chave
-        # Monta XML para envio da requisição
-        xml = self._construir_xml_soap('NFeConsultaProtocolo4', raiz)
-        return self._post(url, xml)
 
+        consulta = TConsSitNFe(
+            versao=VERSAO_PADRAO,
+            tpAmb=str(self._ambiente),
+            xServ='CONSULTAR',
+            chNFe=chave,
+        )
+        consulta.original_tagname_ = 'consSitNFe'
+        xml = self._construir_xml_soap(
+            'NFeConsultaProtocolo4',
+            self._construir_etree_ds(consulta)
+        )
+        return self._post(url, xml)
     def consulta_notas_cnpj(self, cnpj, nsu=0):
         """
         “Serviço de Consulta da Relação de Documentos Destinados” para um determinado CNPJ de
