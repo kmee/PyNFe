@@ -17,6 +17,7 @@ from pynfe.utils.flags import (
 
 from mdfelib.v3_00.consStatServMDFe import TConsStatServ
 from mdfelib.v3_00.consSitMDFe import TConsSitMDFe
+from mdfelib.v3_00.consMDFeNaoEnc import TConsMDFeNaoEnc
 
 from .comunicacao import ComunicacaoSefaz
 
@@ -33,12 +34,12 @@ from pynfe.utils.flags import (
 from pynfe.utils.webservices import (
     MDFE_WS_URL,
     MDFE_WS_METODO,
-    WS_MDFE_RECEPCAO,
-    WS_MDFE_RET_RECEPCAO,
-    WS_MDFE_RECEPCAO_EVENTO,
     WS_MDFE_CONSULTA,
     WS_MDFE_STATUS_SERVICO,
     WS_MDFE_CONSULTA_NAO_ENCERRADOS,
+    WS_MDFE_RECEPCAO,
+    WS_MDFE_RET_RECEPCAO,
+    WS_MDFE_RECEPCAO_EVENTO,
 )
 
 class ComunicacaoMDFE(ComunicacaoSefaz):
@@ -103,6 +104,22 @@ class ComunicacaoMDFE(ComunicacaoSefaz):
             chMDFe=chave,
         )
         raiz.original_tagname_ = 'consSitMDFe'
+        xml = self._construir_xml_soap(
+            metodo,
+            self._construir_etree_ds(raiz)
+        )
+        return self._post(url, xml)
+
+    def consulta_nao_encerrados(self, cnpj):
+
+        url, metodo = self._get_url_metodo(WS_MDFE_CONSULTA_NAO_ENCERRADOS)
+        raiz = TConsMDFeNaoEnc(
+            versao=self._versao,
+            tpAmb=str(self._ambiente),
+            xServ='CONSULTAR NÃO ENCERRADOS',
+            CNPJ=cnpj,
+        )
+        raiz.original_tagname_ = 'consMDFeNaoEnc'
         xml = self._construir_xml_soap(
             metodo,
             self._construir_etree_ds(raiz)
