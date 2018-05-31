@@ -1,26 +1,4 @@
 # -*- coding: utf-8 -*-
-import re
-import ssl
-import datetime
-import requests
-from pynfe.utils import etree, so_numeros
-from pynfe.utils.flags import (
-    NAMESPACE_NFE,
-    NAMESPACE_XSD,
-    NAMESPACE_XSI,
-    VERSAO_PADRAO,
-    NAMESPACE_SOAP,
-    CODIGOS_ESTADOS,
-    NAMESPACE_BETHA,
-    NAMESPACE_METODO,
-)
-
-from mdfelib.v3_00.consStatServMDFe import TConsStatServ
-from mdfelib.v3_00.consSitMDFe import TConsSitMDFe
-from mdfelib.v3_00.consMDFeNaoEnc import TConsMDFeNaoEnc
-from mdfelib.v3_00.enviMDFe import TEnviMDFe
-
-from .comunicacao import ComunicacaoSefaz
 
 try:
     from StringIO import StringIO
@@ -39,12 +17,16 @@ from pynfe.utils.webservices import (
     WS_MDFE_STATUS_SERVICO,
     WS_MDFE_CONSULTA_NAO_ENCERRADOS,
     WS_MDFE_RECEPCAO,
-    WS_MDFE_RET_RECEPCAO,
-    WS_MDFE_RECEPCAO_EVENTO,
 )
+from .comunicacao import ComunicacaoSefaz
+
+from mdfelib.v3_00.consStatServMDFe import TConsStatServ
+from mdfelib.v3_00.consSitMDFe import TConsSitMDFe
+from mdfelib.v3_00.consMDFeNaoEnc import TConsMDFeNaoEnc
+from mdfelib.v3_00.enviMDFe import TEnviMDFe
+
 
 class ComunicacaoMDFE(ComunicacaoSefaz):
-
     _modelo = MODELO_MDFE
     _namespace = NAMESPACE_MDFE
     _versao = '3.00'
@@ -55,31 +37,7 @@ class ComunicacaoMDFE(ComunicacaoSefaz):
     _retorno_mensagem = 'mdfeRecepcaoResult'
     _namespace_metodo = NAMESPACE_MDFE_METODO
 
-    def _cabecalho_soap(self, metodo):
-        """Monta o XML do cabeçalho da requisição SOAP"""
-
-        raiz = etree.Element(
-            self._header,
-            xmlns=self._namespace_metodo + metodo
-        )
-        etree.SubElement(raiz, 'versaoDados').text = '3.00'
-            # MDFE_WS_METODO[metodo]['versao']
-
-        etree.SubElement(raiz, 'cUF').text = CODIGOS_ESTADOS[self.uf.upper()]
-        return raiz
-
-    def _get_url_metodo(self, ws_metodo):
-        url = (
-           'https://' +
-           self._ws_url[self._ambiente]['servidor'] +
-           '/' +
-           self._ws_url[self._ambiente][ws_metodo]
-        )
-        metodo = self._ws_metodo[ws_metodo]['metodo']
-        return url, metodo
-
     def status_servico(self):
-
         url, metodo = self._get_url_metodo(WS_MDFE_STATUS_SERVICO)
 
         raiz = TConsStatServ(
@@ -96,7 +54,6 @@ class ComunicacaoMDFE(ComunicacaoSefaz):
         return self._post(url, xml)
 
     def consulta(self, chave):
-
         url, metodo = self._get_url_metodo(WS_MDFE_CONSULTA)
         raiz = TConsSitMDFe(
             versao=self._versao,
@@ -112,7 +69,6 @@ class ComunicacaoMDFE(ComunicacaoSefaz):
         return self._post(url, xml)
 
     def consulta_nao_encerrados(self, cnpj):
-
         url, metodo = self._get_url_metodo(WS_MDFE_CONSULTA_NAO_ENCERRADOS)
         raiz = TConsMDFeNaoEnc(
             versao=self._versao,
@@ -128,7 +84,6 @@ class ComunicacaoMDFE(ComunicacaoSefaz):
         return self._post(url, xml)
 
     def autorizacao(self, documento, id_lote=1):
-
         url, metodo = self._get_url_metodo(WS_MDFE_RECEPCAO)
 
         raiz = TEnviMDFe(

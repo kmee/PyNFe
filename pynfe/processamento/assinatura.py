@@ -4,7 +4,7 @@ from pynfe.utils.flags import NAMESPACE_SIG
 import subprocess
 import signxml
 from signxml import XMLSigner
-from pynfe.entidades import CertificadoA1
+from .certificado import CertificadoA1
 
 
 class Assinatura(object):
