@@ -513,7 +513,7 @@ MDFE_WS_METODO = {
     },
     WS_MDFE_CONSULTA: {
         'webservice': 'MDFeConsulta',
-        'metodo': 'mdfeConsultaMDF',
+        'metodo': 'MDFeConsulta',
         'versao': '3.00',
     },
     WS_MDFE_STATUS_SERVICO: {

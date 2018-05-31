@@ -16,6 +16,7 @@ from pynfe.utils.flags import (
 )
 
 from mdfelib.v3_00.consStatServMDFe import TConsStatServ
+from mdfelib.v3_00.consSitMDFe import TConsSitMDFe
 
 from .comunicacao import ComunicacaoSefaz
 
@@ -92,3 +93,18 @@ class ComunicacaoMDFE(ComunicacaoSefaz):
 
         return self._post(url, xml)
 
+    def consulta(self, chave):
+
+        url, metodo = self._get_url_metodo(WS_MDFE_CONSULTA)
+        raiz = TConsSitMDFe(
+            versao=self._versao,
+            tpAmb=str(self._ambiente),
+            xServ='CONSULTAR',
+            chMDFe=chave,
+        )
+        raiz.original_tagname_ = 'consSitMDFe'
+        xml = self._construir_xml_soap(
+            metodo,
+            self._construir_etree_ds(raiz)
+        )
+        return self._post(url, xml)
