@@ -18,6 +18,7 @@ from pynfe.utils.flags import (
 from mdfelib.v3_00.consStatServMDFe import TConsStatServ
 from mdfelib.v3_00.consSitMDFe import TConsSitMDFe
 from mdfelib.v3_00.consMDFeNaoEnc import TConsMDFeNaoEnc
+from mdfelib.v3_00.enviMDFe import TEnviMDFe
 
 from .comunicacao import ComunicacaoSefaz
 
@@ -125,3 +126,24 @@ class ComunicacaoMDFE(ComunicacaoSefaz):
             self._construir_etree_ds(raiz)
         )
         return self._post(url, xml)
+
+    def autorizacao(self, documento, id_lote=1):
+
+        url, metodo = self._get_url_metodo(WS_MDFE_RECEPCAO)
+
+        raiz = TEnviMDFe(
+            versao=self._versao,
+            idLote=id_lote,
+            MDFe=documento,
+        )
+        raiz.original_tagname_ = 'enviMDFe'
+
+        xml = self._construir_xml_soap(
+            metodo,
+            self._construir_etree_ds(raiz)
+        )
+        # Faz request no Servidor da Sefaz
+        retorno = self._post(url, xml)
+
+        # TODO: Processar o retorno
+        return retorno
