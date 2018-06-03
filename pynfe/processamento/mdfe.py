@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import division, print_function, unicode_literals
+
+
 try:
     from StringIO import StringIO
 except ImportError:
@@ -9,6 +12,9 @@ from pynfe.utils.flags import (
     NAMESPACE_MDFE,
     MODELO_MDFE,
     NAMESPACE_MDFE_METODO,
+    NAMESPACE_SOAP,
+    NAMESPACE_XSI,
+    NAMESPACE_XSD,
 )
 from pynfe.utils.webservices import (
     MDFE_WS_URL,
@@ -36,6 +42,13 @@ class ComunicacaoMDFE(ComunicacaoSefaz):
     _envio_mensagem = 'mdfeDadosMsg'
     _retorno_mensagem = 'mdfeRecepcaoResult'
     _namespace_metodo = NAMESPACE_MDFE_METODO
+
+    _accept = False
+    _soap_action = False
+    _namespace_soap = NAMESPACE_SOAP
+    _namespace_xsi = NAMESPACE_XSI
+    _namespace_xsd = NAMESPACE_XSD
+    _soap_version = 'soap12'
 
     def status_servico(self):
         url, metodo = self._get_url_metodo(WS_MDFE_STATUS_SERVICO)

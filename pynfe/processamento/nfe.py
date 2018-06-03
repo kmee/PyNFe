@@ -1,14 +1,20 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import division, print_function, unicode_literals
+
+
 import datetime
 from pynfe.utils import etree, so_numeros
 from pynfe.utils.flags import (
     NAMESPACE_NFE,
-
     VERSAO_PADRAO,
     CODIGOS_ESTADOS,
-    NAMESPACE_METODO
+    NAMESPACE_METODO,
+    NAMESPACE_SOAP,
+    NAMESPACE_XSI,
+    NAMESPACE_XSD,
 )
+
 from pynfe.utils.webservices import NFE, NFCE
 from .assinatura import AssinaturaA1
 from .comunicacao import ComunicacaoSefaz
@@ -26,6 +32,11 @@ class ComunicacaoNFe(ComunicacaoSefaz):
     _header = False
     _envio_mensagem = 'nfeDadosMsg'
     _namespace_metodo = NAMESPACE_METODO
+    _accept = False
+    _namespace_soap = NAMESPACE_SOAP
+    _namespace_xsi = NAMESPACE_XSI
+    _namespace_xsd = NAMESPACE_XSD
+    _soap_version = 'soap'
 
     def autorizacao(self, modelo, nota_fiscal, id_lote=1, ind_sinc=1):
         """
