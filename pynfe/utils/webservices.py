@@ -517,17 +517,17 @@ MDFE_WS_METODO = {
     },
     WS_MDFE_CONSULTA: {
         'webservice': 'MDFeConsulta',
-        'metodo': 'MDFeConsulta',
+        'metodo': 'mdfeConsultaMDF',
         'versao': '3.00',
     },
     WS_MDFE_STATUS_SERVICO: {
         'webservice': 'MDFeStatusServico',
-        'metodo': 'MDFeStatusServico',
+        'metodo': 'mdfeStatusServicoMDF',
         'versao': '3.00',
     },
     WS_MDFE_CONSULTA_NAO_ENCERRADOS: {
         'webservice': 'MDFeConsNaoEnc',
-        'metodo': 'MDFeConsNaoEnc',
+        'metodo': 'mdfeConsNaoEnc',
         'versao': '3.00',
     },
 }

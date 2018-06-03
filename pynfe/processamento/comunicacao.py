@@ -71,15 +71,16 @@ class ComunicacaoSefaz(Comunicacao):
         etree.SubElement(raiz, 'cUF').text = CODIGOS_ESTADOS[self.uf.upper()]
         return raiz
 
-    def _get_url_metodo(self, ws_metodo):
+    def _get_url_webservice_metodo(self, ws_metodo):
         url = (
                 'https://' +
                 self._ws_url[self._ambiente]['servidor'] +
                 '/' +
                 self._ws_url[self._ambiente][ws_metodo]
         )
+        webservice = self._ws_metodo[ws_metodo]['webservice']
         metodo = self._ws_metodo[ws_metodo]['metodo']
-        return url, metodo
+        return url, webservice, metodo
 
     def _construir_xml_soap(self, metodo, dados):
         """Mota o XML para o envio via SOAP"""
@@ -122,11 +123,11 @@ class ComunicacaoSefaz(Comunicacao):
     def _post_header(self, soap_webservice_method=False):
         """Retorna um dicionário com os atributos para o cabeçalho da requisição HTTP"""
         header = {
-            b'content-type': b'application/soap+xml; charset=utf-8;'
+            b'content-type': b'text/xml; charset=utf-8;',
         }
 
         # PE é a únca UF que exige SOAPAction no header
-        if self._soap_action and soap_webservice_method:
+        if soap_webservice_method:
             header['SOAPAction'] = \
                 self._namespace_metodo + soap_webservice_method
 
@@ -135,7 +136,7 @@ class ComunicacaoSefaz(Comunicacao):
 
         return header
 
-    def _post(self, url, xml, send_raw=False, soap_webservice_method=False):
+    def _post(self, url, xml, soap_webservice_method=False):
         certificado_a1 = CertificadoA1(self.certificado)
         chave, cert = certificado_a1.separar_arquivo(self.certificado_senha, caminho=True)
         chave_cert = (cert, chave)
@@ -149,8 +150,7 @@ class ComunicacaoSefaz(Comunicacao):
                 lambda x: x.group(0).replace('&lt;', '<').replace('&gt;', '>').replace('amp;', ''),
                 etree.tostring(xml, encoding='unicode').replace('\n', '')
             )
-            if send_raw:
-                xml = xml_declaration + xml
+            xml = xml_declaration + xml
             # Faz o request com o servidor
             result = requests.post(
                 url.encode('utf-8'),
