@@ -23,6 +23,7 @@ from pynfe.utils.webservices import (
     WS_MDFE_STATUS_SERVICO,
     WS_MDFE_CONSULTA_NAO_ENCERRADOS,
     WS_MDFE_RECEPCAO,
+    WS_MDFE_RET_RECEPCAO,
 )
 from .comunicacao import ComunicacaoSefaz
 
@@ -30,6 +31,7 @@ from mdfelib.v3_00.consStatServMDFe import TConsStatServ
 from mdfelib.v3_00.consSitMDFe import TConsSitMDFe
 from mdfelib.v3_00.consMDFeNaoEnc import TConsMDFeNaoEnc
 from mdfelib.v3_00.enviMDFe import TEnviMDFe
+from mdfelib.v3_00.consReciMDFe import TConsReciMDFe
 
 
 class ComunicacaoMDFE(ComunicacaoSefaz):
@@ -132,3 +134,22 @@ class ComunicacaoMDFE(ComunicacaoSefaz):
 
         # TODO: Processar o retorno
         return retorno
+
+    def consulta_recibo(self, numero):
+        url, webservice, metodo = self._get_url_webservice_metodo(
+            WS_MDFE_RET_RECEPCAO
+        )
+
+        raiz = TConsReciMDFe(
+            versao=self._versao,
+            tpAmb=str(self._ambiente),
+            nRec=numero,
+        )
+        raiz.original_tagname_ = 'consReciMDFe'
+        xml = self._construir_xml_soap(
+            webservice,
+            self._construir_etree_ds(raiz)
+        )
+        return self._post(
+            url, xml, soap_webservice_method=webservice + b'/' + metodo
+        )
