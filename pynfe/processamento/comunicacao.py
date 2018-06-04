@@ -128,11 +128,11 @@ class ComunicacaoSefaz(Comunicacao):
 
         # PE é a únca UF que exige SOAPAction no header
         if soap_webservice_method:
-            header['SOAPAction'] = \
-                self._namespace_metodo + soap_webservice_method
+            header[b'SOAPAction'] = \
+                (self._namespace_metodo + soap_webservice_method).encode('utf-8')
 
         if self._accept:
-            header['Accept'] = b'application/soap+xml; charset=utf-8;'
+            header[b'Accept'] = b'application/soap+xml; charset=utf-8;'
 
         return header
 
