@@ -18,13 +18,6 @@ class RetornoSoap(object):
 
     def analisar_processo(self, documento, entidade):
 
-        if documento == 'MDFe' and self.resposta.protMDFe:
-            self.processo = entidade(
-                versao=self.resposta.versao,
-                protMDFe=self.resposta.protMDFe,
-            )
-        if documento == 'MDFe' and self.resposta.procEventoMDFe:
-            print('procEventoMDFe')
             # self.processo = entidade(
             #     versao=self.resposta.versao,
             #     protMDFe=self.resposta.protMDFe,

@@ -7,6 +7,7 @@ from __future__ import division, print_function, unicode_literals
 
 import time
 
+from pynfe.processamento import AssinaturaA1
 from pynfe.utils.flags import (
     NAMESPACE_MDFE,
     CODIGOS_ESTADOS,
@@ -34,7 +35,6 @@ from mdfelib.v3_00 import consMDFeNaoEnc
 from mdfelib.v3_00 import enviMDFe
 from mdfelib.v3_00 import consReciMDFe
 from mdfelib.v3_00 import procMDFe
-# from mdfelib.v3_00 import procEventoMDFe
 
 MDFE_SITUACAO_JA_ENVIADO = ('100', '101', '132')
 
@@ -256,3 +256,13 @@ class ComunicacaoMDFe(Comunicacao):
             pass
 
         yield proc_recibo
+
+    def assina_documento(self, xml):
+        a1 = AssinaturaA1(self.certificado, self.certificado_senha)
+        edoc = etree.fromstring(
+            xml.encode('utf-8'),
+            parser=etree.XMLParser(remove_blank_text=True))
+        xml = unicode(etree.tounicode(a1.assinar(edoc)).decode('utf-8'))
+        xml = xml.replace('\n', '')
+        xml = xml.replace('\r', '')
+        return xml
