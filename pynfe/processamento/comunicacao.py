@@ -72,20 +72,6 @@ class Comunicacao(object):
         a.append(dados)
         return raiz
 
-    def _construir_etree_ds(self, ds, assinar=False):
-        output = StringIO()
-        ds.export(
-            output,
-            0,
-            pretty_print=False,
-            namespacedef_='xmlns="' + self._namespace + '"'
-        )
-        contents = output.getvalue()
-        output.close()
-        if assinar:
-            return etree.fromstring(self.assina_documento(contents))
-        return etree.fromstring(contents)
-
     def _post_header(self, soap_webservice_method=False):
         """Retorna um dicionário com os atributos para o cabeçalho da requisição HTTP"""
         header = {
@@ -134,10 +120,4 @@ class Comunicacao(object):
 
     def assina_documento(self, xml):
         a1 = AssinaturaA1(self.certificado, self.certificado_senha)
-        edoc = etree.fromstring(
-            xml.encode('utf-8'),
-            parser=etree.XMLParser(remove_blank_text=True))
-        xml = unicode(etree.tounicode(a1.assinar(edoc)).decode('utf-8'))
-        xml = xml.replace('\n', '')
-        xml = xml.replace('\r', '')
-        return xml
+        return a1.assinar(xml)

@@ -7,7 +7,6 @@ from __future__ import division, print_function, unicode_literals
 
 import time
 
-from pynfe.processamento import AssinaturaA1
 from pynfe.utils.flags import (
     NAMESPACE_MDFE,
     CODIGOS_ESTADOS,
@@ -88,20 +87,19 @@ class ComunicacaoMDFe(Comunicacao):
         metodo = self._ws_metodo[ws_metodo]['metodo']
         return url, webservice, metodo
 
-    def _post_soap(self, classe, ws_metodo, raiz_xml, str_xml=False,
+    def _post_soap(self, classe, ws_metodo, raiz_ds, str_xml=False,
                    assinar=False):
         url, webservice, metodo = self._get_url_webservice_metodo(
             ws_metodo
         )
-        if not str_xml:
-            xml = self._construir_xml_soap(
-                webservice,
-                self._construir_etree_ds(raiz_xml, assinar)
-            )
-        else:
-            etree_ds = self._construir_etree_ds(raiz_xml, assinar)
+        etree_ds = raiz_ds.to_etree(name_=raiz_ds.original_tagname_)
+        if assinar:
+            etree_ds = self.assina_documento(etree_ds)
+
+        if str_xml:
             etree_ds.append(etree.fromstring(str_xml))
-            xml = self._construir_xml_soap(webservice, etree_ds)
+
+        xml = self._construir_xml_soap(webservice, etree_ds)
 
         retorno = self._post(
             url, xml, soap_webservice_method=webservice + b'/' + metodo
@@ -118,7 +116,7 @@ class ComunicacaoMDFe(Comunicacao):
         return self._post_soap(
             classe=consStatServMDFe,
             ws_metodo=WS_MDFE_STATUS_SERVICO,
-            raiz_xml=raiz
+            raiz_ds=raiz
         )
 
     def consulta(self, chave):
@@ -132,7 +130,7 @@ class ComunicacaoMDFe(Comunicacao):
         return self._post_soap(
             classe=consSitMDFe,
             ws_metodo=WS_MDFE_CONSULTA,
-            raiz_xml=raiz
+            raiz_ds=raiz
         )
         # ).analisar_processo('MDFe', procEventoMDFe)
 
@@ -148,7 +146,7 @@ class ComunicacaoMDFe(Comunicacao):
         return self._post_soap(
             classe=consMDFeNaoEnc,
             ws_metodo=WS_MDFE_CONSULTA_NAO_ENCERRADOS,
-            raiz_xml=raiz
+            raiz_ds=raiz
         )
 
     def encerramento(self, inf_evento):
@@ -162,7 +160,7 @@ class ComunicacaoMDFe(Comunicacao):
         return self._post_soap(
             classe=evEncMDFe,
             ws_metodo=WS_MDFE_RECEPCAO_EVENTO,
-            raiz_xml=raiz,
+            raiz_ds=raiz,
             assinar=True,
         )
 
@@ -175,9 +173,9 @@ class ComunicacaoMDFe(Comunicacao):
         return self._post_soap(
             classe=enviMDFe,
             ws_metodo=WS_MDFE_RECEPCAO,
-            raiz_xml=raiz,
-            str_xml=etree.tounicode(
-                self._construir_etree_ds(mdfe, assinar=True)),
+            raiz_ds=raiz,
+            str_xml=etree.tounicode(self.assina_documento(
+                mdfe.to_etree(name_=mdfe.original_tagname_))),
         )
 
     def consulta_recibo(self, numero):
@@ -190,7 +188,7 @@ class ComunicacaoMDFe(Comunicacao):
         return self._post_soap(
             classe=consReciMDFe,
             ws_metodo=WS_MDFE_RET_RECEPCAO,
-            raiz_xml=raiz,
+            raiz_ds=raiz,
         ).analisar_processo('MDFe', procMDFe)
 
     def processar_documento(self, edoc):
