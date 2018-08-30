@@ -35,6 +35,7 @@ from mdfelib.v3_00 import consMDFeNaoEnc
 from mdfelib.v3_00 import enviMDFe
 from mdfelib.v3_00 import consReciMDFe
 from mdfelib.v3_00 import procMDFe
+from mdfelib.v3_00 import evEncMDFe
 
 MDFE_SITUACAO_JA_ENVIADO = ('100', '101', '132')
 
@@ -148,6 +149,21 @@ class ComunicacaoMDFe(Comunicacao):
             classe=consMDFeNaoEnc,
             ws_metodo=WS_MDFE_CONSULTA_NAO_ENCERRADOS,
             raiz_xml=raiz
+        )
+
+    def encerramento(self, inf_evento):
+
+        raiz = evEncMDFe.TEvento(
+            versao='3.00',
+            infEvento=inf_evento,
+        )
+        raiz.original_tagname_ = 'eventoMDFe'
+
+        return self._post_soap(
+            classe=evEncMDFe,
+            ws_metodo=WS_MDFE_RECEPCAO_EVENTO,
+            raiz_xml=raiz,
+            assinar=True,
         )
 
     def autorizacao(self, mdfe, id_lote='1'):
