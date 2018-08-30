@@ -40,10 +40,10 @@ class Comunicacao(object):
     _namespace_xsd = NAMESPACE_XSD
     _soap_version = 'soap'
 
-    def __init__(self, uf, certificado, certificado_senha, homologacao=False):
+    def __init__(self, uf, certificado, senha, homologacao=False):
         self.uf = uf
         self.certificado = certificado
-        self.certificado_senha = certificado_senha
+        self.certificado_senha = senha
         self._ambiente = 2 if homologacao else 1
 
     def _construir_xml_soap(self, metodo, dados):
@@ -72,7 +72,7 @@ class Comunicacao(object):
         a.append(dados)
         return raiz
 
-    def _construir_etree_ds(self, ds):
+    def _construir_etree_ds(self, ds, assinar=False):
         output = StringIO()
         ds.export(
             output,
@@ -82,6 +82,8 @@ class Comunicacao(object):
         )
         contents = output.getvalue()
         output.close()
+        if assinar:
+            return etree.fromstring(self.assina_documento(contents))
         return etree.fromstring(contents)
 
     def _post_header(self, soap_webservice_method=False):
@@ -129,3 +131,13 @@ class Comunicacao(object):
             raise e
         finally:
             certificado_a1.excluir()
+
+    def assina_documento(self, xml):
+        a1 = AssinaturaA1(self.certificado, self.certificado_senha)
+        edoc = etree.fromstring(
+            xml.encode('utf-8'),
+            parser=etree.XMLParser(remove_blank_text=True))
+        xml = unicode(etree.tounicode(a1.assinar(edoc)).decode('utf-8'))
+        xml = xml.replace('\n', '')
+        xml = xml.replace('\r', '')
+        return xml

@@ -87,17 +87,18 @@ class ComunicacaoMDFe(Comunicacao):
         metodo = self._ws_metodo[ws_metodo]['metodo']
         return url, webservice, metodo
 
-    def _post_soap(self, classe, ws_metodo, raiz_xml, str_xml=False):
+    def _post_soap(self, classe, ws_metodo, raiz_xml, str_xml=False,
+                   assinar=False):
         url, webservice, metodo = self._get_url_webservice_metodo(
             ws_metodo
         )
         if not str_xml:
             xml = self._construir_xml_soap(
                 webservice,
-                self._construir_etree_ds(raiz_xml)
+                self._construir_etree_ds(raiz_xml, assinar)
             )
         else:
-            etree_ds = self._construir_etree_ds(raiz_xml)
+            etree_ds = self._construir_etree_ds(raiz_xml, assinar)
             etree_ds.append(etree.fromstring(str_xml))
             xml = self._construir_xml_soap(webservice, etree_ds)
 
@@ -256,13 +257,3 @@ class ComunicacaoMDFe(Comunicacao):
             pass
 
         yield proc_recibo
-
-    def assina_documento(self, xml):
-        a1 = AssinaturaA1(self.certificado, self.certificado_senha)
-        edoc = etree.fromstring(
-            xml.encode('utf-8'),
-            parser=etree.XMLParser(remove_blank_text=True))
-        xml = unicode(etree.tounicode(a1.assinar(edoc)).decode('utf-8'))
-        xml = xml.replace('\n', '')
-        xml = xml.replace('\r', '')
-        return xml
