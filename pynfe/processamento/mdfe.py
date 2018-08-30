@@ -150,17 +150,18 @@ class ComunicacaoMDFe(Comunicacao):
             raiz_xml=raiz
         )
 
-    def autorizacao(self, str_documento_assinado, id_lote='1'):
+    def autorizacao(self, mdfe, id_lote='1'):
         raiz = enviMDFe.TEnviMDFe(
             versao=self._versao,
-            idLote=id_lote
+            idLote=id_lote,
         )
         raiz.original_tagname_ = 'enviMDFe'
         return self._post_soap(
             classe=enviMDFe,
             ws_metodo=WS_MDFE_RECEPCAO,
             raiz_xml=raiz,
-            str_xml=str_documento_assinado,
+            str_xml=etree.tounicode(
+                self._construir_etree_ds(mdfe, assinar=True)),
         )
 
     def consulta_recibo(self, numero):
