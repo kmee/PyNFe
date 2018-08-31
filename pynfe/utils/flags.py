@@ -312,3 +312,30 @@ MDFE_WS_METODO = {
         'metodo': 'mdfeConsNaoEnc',
     },
 }
+
+
+NAMESPACE_GNRE = 'http://www.gnre.pe.gov.br'
+NAMESPACE_GNRE_METODO = 'http://www.gnre.pe.gov.br/webservice/'
+MODELO_GNRE = '23'
+
+VERSAO_GNRE = '1.12'
+
+
+WS_GNRE_RECEPCAO = 'RECEPCAO'
+WS_GNRE_RET_RECEPCAO = 'RESULTADO'
+WS_GNRE_CONFIG = 'CONFIG'
+
+GNRE_WS_METODO = {
+    WS_GNRE_RECEPCAO: {
+        'webservice': 'GnreLoteRecepcao',
+        'metodo': 'processar',
+    },
+    WS_GNRE_RET_RECEPCAO: {
+        'webservice': 'GnreResultadoLote',
+        'metodo': 'consultar',
+    },
+    WS_GNRE_CONFIG: {
+        'webservice': 'GnreConfigUF',
+        'metodo': 'consultar',
+    },
+}

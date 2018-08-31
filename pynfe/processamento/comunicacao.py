@@ -13,6 +13,7 @@ from pynfe.utils.flags import (
 )
 from pynfe.entidades.certificado import CertificadoA1
 from .assinatura import AssinaturaA1
+from .resposta import analisar_retorno
 
 
 class Comunicacao(object):
@@ -82,6 +83,7 @@ class Comunicacao(object):
         )
         contents = output.getvalue()
         output.close()
+        contents = u'<TConsultaConfigUf xmlns="http://www.gnre.pe.gov.br"><ambiente>1</ambiente><uf>CE</uf></TConsultaConfigUf>'
         return etree.fromstring(contents)
 
     def _post_header(self, soap_webservice_method=False):
@@ -115,6 +117,21 @@ class Comunicacao(object):
                 etree.tostring(xml, encoding='unicode').replace('\n', '')
             )
             xml = xml_declaration + xml
+
+            import ssl
+            from urllib3.poolmanager import PoolManager
+
+            from requests.adapters import HTTPAdapter
+
+            class Ssl3HttpAdapter(HTTPAdapter):
+                """"Transport adapter" that allows us to use SSLv3."""
+
+                def init_poolmanager(self, connections, maxsize, block=False):
+                    self.poolmanager = PoolManager(
+                        num_pools=connections, maxsize=maxsize,
+                        block=block, ssl_version=ssl.PROTOCOL_SSLv3)
+
+
             # Faz o request com o servidor
             result = requests.post(
                 url.encode('utf-8'),
@@ -129,3 +146,44 @@ class Comunicacao(object):
             raise e
         finally:
             certificado_a1.excluir()
+
+    def _cabecalho_soap(self, metodo):
+        """Monta o XML do cabeçalho da requisição SOAP"""
+
+        raiz = etree.Element(
+            self._header,
+            xmlns=self._namespace_metodo + metodo
+        )
+        etree.SubElement(raiz, 'versaoDados').text = '3.00'
+
+        # etree.SubElement(raiz, 'cUF').text = CODIGOS_ESTADOS[self.uf.upper()]
+        return raiz
+
+    def _get_url_webservice_metodo(self, ws_metodo):
+        if self._ambiente == 1:
+            ambiente = 'HTTPS'
+        else:
+            ambiente = 'HOMOLOGACAO'
+        url = self._webservice['SVRS'][ambiente] + self._webservice['SVRS'][ws_metodo]
+        webservice = self._ws_metodo[ws_metodo]['webservice']
+        metodo = self._ws_metodo[ws_metodo]['metodo']
+        return url, webservice, metodo
+
+    def _post_soap(self, classe, ws_metodo, raiz_xml, str_xml=False):
+        url, webservice, metodo = self._get_url_webservice_metodo(
+            ws_metodo
+        )
+        if not str_xml:
+            xml = self._construir_xml_soap(
+                webservice,
+                self._construir_etree_ds(raiz_xml)
+            )
+        else:
+            etree_ds = self._construir_etree_ds(raiz_xml)
+            etree_ds.append(etree.fromstring(str_xml))
+            xml = self._construir_xml_soap(webservice, etree_ds)
+
+        retorno = self._post(
+            url, xml, soap_webservice_method=webservice + b'/' + metodo
+        )
+        return analisar_retorno(ws_metodo, retorno, classe)

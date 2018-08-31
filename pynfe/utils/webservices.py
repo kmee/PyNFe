@@ -500,3 +500,16 @@ MDFE = {
 		'HOMOLOGACAO': 'https://mdfe-homologacao.svrs.rs.gov.br/ws/'
 	}
 }
+
+
+GNRE = {
+    # unico autorizador de GNRE
+    'PE': {
+        'RECEPCAO': 'GnreLoteRecepcao',
+        'RESULTADO': 'GnreResultadoLote',
+        'CONFIG': 'GnreConfigUF',
+        'HTTPS': 'https://www.gnre.pe.gov.br/gnreWS/services/',
+        'HOMOLOGACAO': 'https://www.testegnre.pe.gov.br/gnreWS/services/'
+
+    }
+}

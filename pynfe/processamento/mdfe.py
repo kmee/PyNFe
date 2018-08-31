@@ -49,7 +49,7 @@ class ComunicacaoMDFe(Comunicacao):
     _envio_mensagem = 'mdfeDadosMsg'
     _retorno_mensagem = 'mdfeRecepcaoResult'
     _namespace_metodo = NAMESPACE_MDFE_METODO
-
+    _webservice = MDFE
     _accept = True
     _soap_action = False
     _namespace_soap = NAMESPACE_SOAP
@@ -64,47 +64,15 @@ class ComunicacaoMDFe(Comunicacao):
     consulta_servico_ao_enviar = True
     maximo_tentativas_consulta_recibo = 5
 
-    def _cabecalho_soap(self, metodo):
-        """Monta o XML do cabeçalho da requisição SOAP"""
-
-        raiz = etree.Element(
-            self._header,
-            xmlns=self._namespace_metodo + metodo
-        )
-        etree.SubElement(raiz, 'versaoDados').text = '3.00'
-        # MDFE_WS_METODO[metodo]['versao']
-
-        etree.SubElement(raiz, 'cUF').text = CODIGOS_ESTADOS[self.uf.upper()]
-        return raiz
-
     def _get_url_webservice_metodo(self, ws_metodo):
         if self._ambiente == 1:
             ambiente = 'HTTPS'
         else:
             ambiente = 'HOMOLOGACAO'
-        url = MDFE['SVRS'][ambiente] + MDFE['SVRS'][ws_metodo]
+        url = self._webservice['SVRS'][ambiente] + self._webservice['SVRS'][ws_metodo]
         webservice = self._ws_metodo[ws_metodo]['webservice']
         metodo = self._ws_metodo[ws_metodo]['metodo']
         return url, webservice, metodo
-
-    def _post_soap(self, classe, ws_metodo, raiz_xml, str_xml=False):
-        url, webservice, metodo = self._get_url_webservice_metodo(
-            ws_metodo
-        )
-        if not str_xml:
-            xml = self._construir_xml_soap(
-                webservice,
-                self._construir_etree_ds(raiz_xml)
-            )
-        else:
-            etree_ds = self._construir_etree_ds(raiz_xml)
-            etree_ds.append(etree.fromstring(str_xml))
-            xml = self._construir_xml_soap(webservice, etree_ds)
-
-        retorno = self._post(
-            url, xml, soap_webservice_method=webservice + b'/' + metodo
-        )
-        return analisar_retorno(ws_metodo, retorno, classe)
 
     def status_servico(self):
         raiz = consStatServMDFe.TConsStatServ(
